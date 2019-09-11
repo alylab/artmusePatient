@@ -1,6 +1,8 @@
 # artmusePatient
 code, data, &amp; stimuli for Ruiz, Meager, Agarwal, &amp; Aly (2019)
-Welcome to artmusePatient! Thanks for checking out the code.
+
+Welcome to artmusePatient! 
+Thanks for checking out the code for the following paper: https://www.biorxiv.org/content/10.1101/765222v1
 
 The task files ‘artmusePatient.m’ and ‘artmusePatient_practice.m’ need to be in the same folder as the ‘stimuli’ and ‘practiceStimuli’ folders. 
 Both scripts will require you to enter a subject number as well as subject initials. These files will output ‘.mat’ and ‘.txt’ result files as well as print the behavioral results into the command window. 

@@ -1,0 +1,119 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1671\cocoasubrtf600
+{\fonttbl\f0\fswiss\fcharset0 Helvetica;\f1\fswiss\fcharset0 Helvetica-Bold;\f2\froman\fcharset0 TimesNewRomanPSMT;
+}
+{\colortbl;\red255\green255\blue255;}
+{\*\expandedcolortbl;;}
+{\*\listtable{\list\listtemplateid1\listhybrid{\listlevel\levelnfc23\levelnfcn23\leveljc0\leveljcn0\levelfollow0\levelstartat0\levelspace360\levelindent0{\*\levelmarker \{disc\}}{\leveltext\leveltemplateid1\'01\uc0\u8226 ;}{\levelnumbers;}\fi-360\li720\lin720 }{\listname ;}\listid1}}
+{\*\listoverridetable{\listoverride\listid1\listoverridecount0\ls1}}
+\margl1440\margr1440\vieww12840\viewh16440\viewkind1
+\deftab720
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardeftab720\ri0\partightenfactor0
+
+\f0\fs24 \cf0 data dictionary for abbreviations used in \'91artmusePatient_XXX.txt\'92 files showing session data. These are the terms found in the header column. \
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardeftab720\ri0\partightenfactor0
+
+\f1\b \cf0 trial
+\f0\b0  - trial number for proceeding data (1-80)\
+
+\f1\b stimOnsetTime
+\f0\b0  - for trial N, time in seconds (relative to experiment start) the base image of trial N appeared\
+
+\f1\b exptCond
+\f0\b0  - experimental condition; 0 = control trial, 1 = relational trial\
+
+\f1\b stimNum
+\f0\b0  - number of the folder (1-80) that the base image and comparison image was drawn from\
+
+\f1\b cue
+\f0\b0  - the cue that appeared on the screen before the base image; 1 = \'91ART\'92, 2 = \'91ROOM\'92\
+
+\f1\b probe
+\f0\b0  - the probe that appeared on the screen after the comparison image; 1 = \'91ART\'92, 2 = \'91ROOM\'92\
+
+\f1\b valid
+\f0\b0  - validity of the trial; 1 = valid trial, 0 = invalid trial\
+
+\f1\b resp
+\f0\b0  - participant response; 1 = yes there was a match, 0 = no there was not a match\
+
+\f1\b corResp
+\f0\b0  - the correct response for that trial; 1 = yes there was a match, 0 = no there was not a match\
+
+\f1\b Acc
+\f0\b0  - whether the participant was accurate on that trial; 1 = accurate, 0 = inaccurate \
+
+\f1\b RT
+\f0\b0  - reaction time; the amount of time in seconds it took the participant to respond once the probe appeared on the screen\
+\
+** note ** for the following variables, the abbreviations denote the trial type and whether it is a hit or false alarm rate using the following logic: \
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardeftab720\li720\fi-360\ri0\partightenfactor0
+\ls1\ilvl0\cf0 -	\'91e_\'92 or \'91c_\'92 = experimental (referred to as \'91relational\'92 in the manuscript) or control trial\
+-	\'91V\'92 or \'91IV\'92 = valid or invalid trial\
+-	\'91Art\'92 or \'91Room\'92 = \'91Art\'92 or \'91Room trial\
+-	\'91H\'92 or \'91FA\'92 = hit or false alarm rate \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardeftab720\ri0\partightenfactor0
+\cf0 \
+In addition, these hit and false alarm rates were calculated on a trial by trial basis such that the value in the final row for each column indicates the final hit/false alarm rate for that trial type. \'91NaN\'92 = not a number.\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardeftab720\ri0\partightenfactor0
+
+\f1\b \cf0 e_VArtH
+\f0\b0  - experimental valid art trial; hit rate\
+
+\f1\b e_VArtFA
+\f0\b0  - experimental valid art trial; false alarm rate\
+
+\f1\b e_VRoomH
+\f0\b0  - experimental valid room trial; hit rate\
+
+\f1\b e_VRoomFA
+\f0\b0  - experimental valid room trial; false alarm rate\
+\
+
+\f1\b e_IVArtH
+\f0\b0  - experimental invalid art trial; hit rate\
+
+\f1\b e_IVArtFA
+\f0\b0  - experimental invalid art trial; false alarm rate\
+
+\f1\b e_IVRoomH
+\f0\b0  - experimental invalid room trial; hit rate\
+
+\f1\b e_IVRoomFA
+\f0\b0  - experimental invalid room trial; false alarm rate\
+\
+
+\f1\b c_VArtH
+\f0\b0  - control valid art trial; hit rate\
+
+\f1\b c_VArtFA
+\f0\b0  - control valid art trial; false alarm rate\
+
+\f1\b c_VRoomH
+\f0\b0  - control valid room trial; hit rate\
+
+\f1\b c_VRoomFA
+\f0\b0  - control valid room trial; false alarm rate\
+\
+
+\f1\b c_IVArtH
+\f0\b0  - control invalid art trial; hit rate\
+
+\f1\b c_IVArtFA
+\f0\b0  - control invalid art trial; false alarm rate\
+
+\f1\b c_IVRoomH
+\f0\b0  - control invalid room trial; hit rate\
+
+\f1\b c_IVRoomFA
+\f0\b0  - control invalid room trial; false alarm rate\
+\
+\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardeftab720\ri0\partightenfactor0
+
+\f2\fs22 \cf0 \
+}

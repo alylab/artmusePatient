@@ -35,7 +35,7 @@ clear all
 
 %% variable names
 
-measures = {'APrime', 'RT', 'InverseEfficiency'};
+measures = {'APrime','logRT'}; % 'DPrime', 'RT', 
 conds = {'controlCond', 'exptCond'};
 states = {'Art', 'Room'};
 trialTypes = {'Valid', 'Invalid'};
@@ -80,15 +80,14 @@ end
 
 %% run rmANOVA
 
-fprintf('\nAprime - Healthy Participants');
+fprintf('\nAprime - Healthy Participants\n');
 RMAOV33(rmData.APrime.controls)
 
-fprintf('\nAprime - Patients');
+fprintf('\nAprime - Patients\n');
 RMAOV33(rmData.APrime.patients)
 
-fprintf('\nReaction Time - Healthy Participants');
-RMAOV33(rmData.RT.controls)
+fprintf('\nLog Reaction Time - Healthy Participants\n');
+RMAOV33(rmData.logRT.controls)
 
-fprintf('\nReaction Time - Patients');
-RMAOV33(rmData.RT.patients)
-
+fprintf('\nLog Reaction Time - Patients\n');
+RMAOV33(rmData.logRT.patients)

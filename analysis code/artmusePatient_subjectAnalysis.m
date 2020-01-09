@@ -3,14 +3,25 @@
 % Mariam Aly
 % October 2016
 %
-% this code was edited to run for multiple subjects at once and is used for
-% all populations run on artmusePatient
+% this code calculates aprime, reaction times, inverse inefficiency accuracy, 
+% hit, false alarm, correct rejection and miss rates from the .mat file 
+% associated with artmusePatient instead of the .txt file
+%
+% it will also analyze multiple subjects at once
+%
+% this is the first step in analyzing data and is used for all patient and
+% healthy participant groups ran on artmusePatient
+%
+% december 2019 modification to calculate D' using the snodgrass correction
+% which ensure no hit rate = 1 or false alarm rate = 0 
+%
+% december 2019 modification to log transform reaction times 
 %
 % for use, make sure to have this code in the same directory as the 'data'
 % folder
 %
 % nicholas ruiz
-% june 2019
+% october 2019
 % =======================================================
 
 clear all
@@ -26,461 +37,345 @@ clear all
 %% directories etc
     subjs = {'101','102','103','104','105','106','107','201','202','203','204','205','206'...
         '207','208','209','210','211','212','213','214'}; % put subject IDs in quotes, separate by comma
+    
+    conds = {'controlCond', 'exptCond'};
+    states = {'Art', 'Room'};
+    validity = {'Valid', 'Invalid'};
 
 %% subject loop
 
-    for s=1:length(subjs)
-
-        % name files according to subject
-        fileToOpen = ['artmusePatient_' subjs{s} '.txt'];
-        fileToSave = [subjs{s} '_artmusePatient_dataAnalysis.mat'];
-
-        openData = fopen(fileToOpen);
-
-        columnHeadings = {'trial' 'stimOnset' 'exptCond' 'stimNum' 'cue' 'probe' 'valid' 'resp' 'corResp' 'accuracy' 'RT',...
-            'e_VArtH' 'e_VArtFA' 'e_VRoomH' 'e_VRoomFA' 'e_IVArtH' 'e_IVArtFA' 'e_IVRoomH' 'e_IVRoomFA',...
-            'c_VArtH' 'c_VArtFA' 'c_VRoomH' 'c_VRoomFA' 'c_IVArtH' 'c_IVArtFA' 'c_IVRoomH' 'c_IVRoomFA'};
-
-        rawDataCells = textscan(openData,'%d%.3f%d%d%d%d%d%d%d%d%.3f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f', ...
-            'HeaderLines', 9, ...
-            'CommentStyle', {'Block'});
-
-        for i = 1:size(rawDataCells,2)
-            rawData(:,i) = double(rawDataCells{i});
-        end
-
-
-        %% mean accuracy: control trials
-
-        % control trials: valid art trials
-        tmpCount = 0; tmpAcc = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 0 && rawData(r,5) == 1 && rawData(r,6) == 1
-                if rawData(r,10) == 1
-                    tmpAcc = tmpAcc + 1;
-                    tmpCount = tmpCount + 1;
-                elseif rawData(r,10) == 0
-                    tmpCount = tmpCount + 1;
-                elseif isnan(rawData(r,10))
-                    ;
-                end
-            end
-        end
-
-        acc = tmpAcc/tmpCount;
-        Accuracy.C_Art_Valid = acc;
-
-
-        % control trials: invalid art trials
-        tmpCount = 0; tmpAcc = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 0 && rawData(r,5) == 2 && rawData(r,6) == 1
-                if rawData(r,10) == 1
-                    tmpAcc = tmpAcc + 1;
-                    tmpCount = tmpCount + 1;
-                elseif rawData(r,10) == 0
-                    tmpCount = tmpCount + 1;
-                elseif isnan(rawData(r,10))
-                    ;
-                end
-            end
-        end
-
-        acc = tmpAcc/tmpCount;
-        Accuracy.C_Art_Invalid = acc;
-
-
-        % control trials: valid room trials
-        tmpCount = 0; tmpAcc = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 0 && rawData(r,5) == 2 && rawData(r,6) == 2
-                if rawData(r,10) == 1
-                    tmpAcc = tmpAcc + 1;
-                    tmpCount = tmpCount + 1;
-                elseif rawData(r,10) == 0
-                    tmpCount = tmpCount + 1;
-                elseif isnan(rawData(r,10))
-                    ;
-                end
-            end
-        end
-
-        acc = tmpAcc/tmpCount;
-        Accuracy.C_Room_Valid = acc;
-
-
-        % control trials: invalid room trials
-        tmpCount = 0; tmpAcc = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 0 && rawData(r,5) == 1 && rawData(r,6) == 2
-                if rawData(r,10) == 1
-                    tmpAcc = tmpAcc + 1;
-                    tmpCount = tmpCount + 1;
-                elseif rawData(r,10) == 0
-                    tmpCount = tmpCount + 1;
-                elseif isnan(rawData(r,10))
-                    ;
-                end
-            end
-        end
-
-        acc = tmpAcc/tmpCount;
-        Accuracy.C_Room_Invalid = acc;
-
-
-        %% mean accuracy: experimental trials
-
-        % experimental trials: valid art trials
-        tmpCount = 0; tmpAcc = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 1 && rawData(r,5) == 1 && rawData(r,6) == 1
-                if rawData(r,10) == 1
-                    tmpAcc = tmpAcc + 1;
-                    tmpCount = tmpCount + 1;
-                elseif rawData(r,10) == 0
-                    tmpCount = tmpCount + 1;
-                elseif isnan(rawData(r,10))
-                    ;
-                end
-            end
-        end
-
-        acc = tmpAcc/tmpCount;
-        Accuracy.E_Art_Valid = acc;
-
-
-        % experimental trials: invalid art trials
-        tmpCount = 0; tmpAcc = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 1 && rawData(r,5) == 2 && rawData(r,6) == 1
-                if rawData(r,10) == 1
-                    tmpAcc = tmpAcc + 1;
-                    tmpCount = tmpCount + 1;
-                elseif rawData(r,10) == 0
-                    tmpCount = tmpCount + 1;
-                elseif isnan(rawData(r,10))
-                    ;
-                end
-            end
-        end
-
-        acc = tmpAcc/tmpCount;
-        Accuracy.E_Art_Invalid = acc;
-
-
-        % experimental trials: valid room trials
-        tmpCount = 0; tmpAcc = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 1 && rawData(r,5) == 2 && rawData(r,6) == 2
-                if rawData(r,10) == 1
-                    tmpAcc = tmpAcc + 1;
-                    tmpCount = tmpCount + 1;
-                elseif rawData(r,10) == 0
-                    tmpCount = tmpCount + 1;
-                elseif isnan(rawData(r,10))
-                    ;
-                end
-            end
-        end
-
-        acc = tmpAcc/tmpCount;
-        Accuracy.E_Room_Valid = acc;
-
-
-        % experimental trials: invalid room trials
-        tmpCount = 0; tmpAcc = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 1 && rawData(r,5) == 1 && rawData(r,6) == 2
-                if rawData(r,10) == 1
-                    tmpAcc = tmpAcc + 1;
-                    tmpCount = tmpCount + 1;
-                elseif rawData(r,10) == 0
-                    tmpCount = tmpCount + 1;
-                elseif isnan(rawData(r,10))
-                    ;
-                end
-            end
-        end
-
-        acc = tmpAcc/tmpCount;
-        Accuracy.E_Room_Invalid = acc;
-
-
-        %% mean RTs: control trials
-
-        % control trials: valid art trials
-        tmpCount = 0; tmpRT = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 0 && rawData(r,5) == 1 && rawData(r,6) == 1
-                if ~isnan(rawData(r,11))
-                    tmpRT = tmpRT + rawData(r,11);
-                    tmpCount = tmpCount + 1;
-                end
-            end
-        end
-
-        rt = tmpRT/tmpCount;
-        RT.C_Art_Valid = rt;
-
-
-        % control trials: invalid art trials
-        tmpCount = 0; tmpRT = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 0 && rawData(r,5) == 2 && rawData(r,6) == 1
-                if ~isnan(rawData(r,11))
-                    tmpRT = tmpRT + rawData(r,11);
-                    tmpCount = tmpCount + 1;
-                end
-            end
-        end
-
-        rt = tmpRT/tmpCount;
-        RT.C_Art_Invalid = rt;
-
-
-        % control trials: valid room trials
-        tmpCount = 0; tmpRT = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 0 && rawData(r,5) == 2 && rawData(r,6) == 2
-                if ~isnan(rawData(r,11))
-                    tmpRT = tmpRT + rawData(r,11);
-                    tmpCount = tmpCount + 1;
-                end
-            end
-        end
-
-        rt = tmpRT/tmpCount;
-        RT.C_Room_Valid = rt;
-
-
-
-        % control trials: invalid room trials
-        tmpCount = 0; tmpRT = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 0 && rawData(r,5) == 1 && rawData(r,6) == 2
-                if ~isnan(rawData(r,11))
-                    tmpRT = tmpRT + rawData(r,11);
-                    tmpCount = tmpCount + 1;
-                end
-            end
-        end
-
-        rt = tmpRT/tmpCount;
-        RT.C_Room_Invalid = rt;
-
-
-
-        %% mean RTs: experimental trials
-
-        % experimental trials: valid art trials
-        tmpCount = 0; tmpRT = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 1 && rawData(r,5) == 1 && rawData(r,6) == 1
-                if ~isnan(rawData(r,11))
-                    tmpRT = tmpRT + rawData(r,11);
-                    tmpCount = tmpCount + 1;
-                end
-            end
-        end
-
-        rt = tmpRT/tmpCount;
-        RT.E_Art_Valid = rt;
-
-
-        % experimental trials: invalid art trials
-        tmpCount = 0; tmpRT = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 1 && rawData(r,5) == 2 && rawData(r,6) == 1
-                if ~isnan(rawData(r,11))
-                    tmpRT = tmpRT + rawData(r,11);
-                    tmpCount = tmpCount + 1;
-                end
-            end
-        end
-
-        rt = tmpRT/tmpCount;
-        RT.E_Art_Invalid = rt;
-
-
-        % experimental trials: valid room trials
-        tmpCount = 0; tmpRT = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 1 && rawData(r,5) == 2 && rawData(r,6) == 2
-                if ~isnan(rawData(r,11))
-                    tmpRT = tmpRT + rawData(r,11);
-                    tmpCount = tmpCount + 1;
-                end
-            end
-        end
-
-        rt = tmpRT/tmpCount;
-        RT.E_Room_Valid = rt;
-
-
-
-        % experimental trials: invalid room trials
-        tmpCount = 0; tmpRT = 0;
-
-        for r = 1:size(rawData,1)
-            if rawData(r,3) == 1 && rawData(r,5) == 1 && rawData(r,6) == 2
-                if ~isnan(rawData(r,11))
-                    tmpRT = tmpRT + rawData(r,11);
-                    tmpCount = tmpCount + 1;
-                end
-            end
-        end
-
-        rt = tmpRT/tmpCount;
-        RT.E_Room_Invalid = rt;
-
-
-
-        %% control trials: hits and false alarms
-
-        Hits.C_Art_Valid = rawData(end,20);
-        Hits.C_Room_Valid = rawData(end,22);
-        Hits.C_Art_Invalid = rawData(end,24);
-        Hits.C_Room_Invalid = rawData(end,26);
-
-        FA.C_Art_Valid = rawData(end,21);
-        FA.C_Room_Valid = rawData(end,23);
-        FA.C_Art_Invalid = rawData(end,25);
-        FA.C_Room_Invalid = rawData(end,27);
-
-
-        %% experimental trials: hits and false alarms
-
-        Hits.E_Art_Valid = rawData(end,12);
-        Hits.E_Room_Valid = rawData(end,14);
-        Hits.E_Art_Invalid = rawData(end,16);
-        Hits.E_Room_Invalid = rawData(end,18);
-
-        FA.E_Art_Valid = rawData(end,13);
-        FA.E_Room_Valid = rawData(end,15);
-        FA.E_Art_Invalid = rawData(end,17);
-        FA.E_Room_Invalid = rawData(end,19);
-
-
-
-        %% control trials: inverse efficiency
-
-        InverseEfficiency.C_Art_Valid = RT.C_Art_Valid/Accuracy.C_Art_Valid;
-        InverseEfficiency.C_Art_Invalid = RT.C_Art_Invalid/Accuracy.C_Art_Invalid;
-        InverseEfficiency.C_Room_Valid = RT.C_Room_Valid/Accuracy.C_Room_Valid;
-        InverseEfficiency.C_Room_Invalid = RT.C_Room_Invalid/Accuracy.C_Room_Invalid;
-
-
-        %% experimental trials: inverse efficiency
-
-        InverseEfficiency.E_Art_Valid = RT.E_Art_Valid/Accuracy.E_Art_Valid;
-        InverseEfficiency.E_Art_Invalid = RT.E_Art_Invalid/Accuracy.E_Art_Invalid;
-        InverseEfficiency.E_Room_Valid = RT.E_Room_Valid/Accuracy.E_Room_Valid;
-        InverseEfficiency.E_Room_Invalid = RT.E_Room_Invalid/Accuracy.E_Room_Invalid;
-
-
-        %% control trials: A'
-
-        % art valid
-        if Hits.C_Art_Valid == FA.C_Art_Valid % if 0 hits and 0 false alarms, A' is NaN -- should be at chance though, 0.5
-            APrime.C_Art_Valid = 0.5;
-        elseif Hits.C_Art_Valid >= FA.C_Art_Valid
-            APrime.C_Art_Valid = ((Hits.C_Art_Valid - FA.C_Art_Valid) * (1 + Hits.C_Art_Valid - FA.C_Art_Valid)) / (4*Hits.C_Art_Valid*(1-FA.C_Art_Valid)) + 0.5;
-        elseif Hits.C_Art_Valid < FA.C_Art_Valid
-            APrime.C_Art_Valid = 0.5 - (FA.C_Art_Valid - Hits.C_Art_Valid) * (1 + FA.C_Art_Valid - Hits.C_Art_Valid) / (4*FA.C_Art_Valid*(1-Hits.C_Art_Valid));
-        end
-
-        % art invalid
-        if Hits.C_Art_Invalid == FA.C_Art_Invalid  % if 0 hits and 0 false alarms, A' is NaN -- should be at chance though, 0.5
-            APrime.C_Art_Invalid = 0.5;
-        elseif Hits.C_Art_Invalid >= FA.C_Art_Invalid
-            APrime.C_Art_Invalid = ((Hits.C_Art_Invalid - FA.C_Art_Invalid) * (1 + Hits.C_Art_Invalid - FA.C_Art_Invalid)) / (4*Hits.C_Art_Invalid*(1-FA.C_Art_Invalid)) + 0.5;
-        elseif Hits.C_Art_Invalid < FA.C_Art_Invalid
-            APrime.C_Art_Invalid = 0.5 - (FA.C_Art_Invalid - Hits.C_Art_Invalid) * (1 + FA.C_Art_Invalid - Hits.C_Art_Invalid) / (4*FA.C_Art_Invalid*(1-Hits.C_Art_Invalid));
-        end
-
-
-        % room valid
-        if Hits.C_Room_Valid ==  FA.C_Room_Valid % if 0 hits and 0 false alarms, A' is NaN -- should be at chance though, 0.5
-            APrime.C_Room_Valid = 0.5;
-        elseif Hits.C_Room_Valid >= FA.C_Room_Valid
-            APrime.C_Room_Valid = ((Hits.C_Room_Valid - FA.C_Room_Valid) * (1 + Hits.C_Room_Valid - FA.C_Room_Valid)) / (4*Hits.C_Room_Valid*(1-FA.C_Room_Valid)) + 0.5;
-        elseif Hits.C_Room_Valid < FA.C_Room_Valid
-            APrime.C_Room_Valid = 0.5 - (FA.C_Room_Valid - Hits.C_Room_Valid) * (1 + FA.C_Room_Valid - Hits.C_Room_Valid) / (4*FA.C_Room_Valid*(1-Hits.C_Room_Valid));
-        end
-
-
-
-        % room invalid
-        if Hits.C_Room_Invalid == FA.C_Room_Invalid  % if 0 hits and 0 false alarms, A' is NaN -- should be at chance though, 0.5
-            APrime.C_Room_Invalid = 0.5;
-        elseif Hits.C_Room_Invalid >= FA.C_Room_Invalid
-            APrime.C_Room_Invalid = ((Hits.C_Room_Invalid - FA.C_Room_Invalid) * (1 + Hits.C_Room_Invalid - FA.C_Room_Invalid)) / (4*Hits.C_Room_Invalid*(1-FA.C_Room_Invalid)) + 0.5;
-        elseif Hits.C_Room_Invalid < FA.C_Room_Invalid
-            APrime.C_Room_Invalid = 0.5 - (FA.C_Room_Invalid - Hits.C_Room_Invalid) * (1 + FA.C_Room_Invalid - Hits.C_Room_Invalid) / (4*FA.C_Room_Invalid*(1-Hits.C_Room_Invalid));
-        end
-
-
-        %% experimental trials: A'
-
-        % art valid
-        if Hits.E_Art_Valid == FA.E_Art_Valid % if 0 hits and 0 false alarms, A' is NaN -- should be at chance though, 0.5
-            APrime.E_Art_Valid = 0.5;
-        elseif Hits.E_Art_Valid >= FA.E_Art_Valid
-            APrime.E_Art_Valid = ((Hits.E_Art_Valid - FA.E_Art_Valid) * (1 + Hits.E_Art_Valid - FA.E_Art_Valid)) / (4*Hits.E_Art_Valid*(1-FA.E_Art_Valid)) + 0.5;
-        elseif Hits.E_Art_Valid < FA.E_Art_Valid
-            APrime.E_Art_Valid = 0.5 - (FA.E_Art_Valid - Hits.E_Art_Valid) * (1 + FA.E_Art_Valid - Hits.E_Art_Valid) / (4*FA.E_Art_Valid*(1-Hits.E_Art_Valid));
-        end
-
-        % art invalid
-        if Hits.E_Art_Invalid == FA.E_Art_Invalid % if 0 hits and 0 false alarms, A' is NaN -- should be at chance though, 0.5
-            APrime.E_Art_Invalid = 0.5;
-        elseif Hits.E_Art_Invalid >= FA.E_Art_Invalid
-            APrime.E_Art_Invalid = ((Hits.E_Art_Invalid - FA.E_Art_Invalid) * (1 + Hits.E_Art_Invalid - FA.E_Art_Invalid)) / (4*Hits.E_Art_Invalid*(1-FA.E_Art_Invalid)) + 0.5;
-        elseif Hits.E_Art_Invalid < FA.E_Art_Invalid
-            APrime.E_Art_Invalid = 0.5 - (FA.E_Art_Invalid - Hits.E_Art_Invalid) * (1 + FA.E_Art_Invalid - Hits.E_Art_Invalid) / (4*FA.E_Art_Invalid*(1-Hits.E_Art_Invalid));
-        end
-
-
-        % room valid
-        if Hits.E_Room_Valid == FA.E_Room_Valid  % if 0 hits and 0 false alarms, A' is NaN -- should be at chance though, 0.5
-            APrime.E_Room_Valid = 0.5;
-        elseif Hits.E_Room_Valid >= FA.E_Room_Valid
-            APrime.E_Room_Valid = ((Hits.E_Room_Valid - FA.E_Room_Valid) * (1 + Hits.E_Room_Valid - FA.E_Room_Valid)) / (4*Hits.E_Room_Valid*(1-FA.E_Room_Valid)) + 0.5;
-        elseif Hits.E_Room_Valid < FA.E_Room_Valid
-            APrime.E_Room_Valid = 0.5 - (FA.E_Room_Valid - Hits.E_Room_Valid) * (1 + FA.E_Room_Valid - Hits.E_Room_Valid) / (4*FA.E_Room_Valid*(1-Hits.E_Room_Valid));
-        end
-
-
-
-        % room invalid
-        if Hits.E_Room_Invalid == FA.E_Room_Invalid % if 0 hits and 0 false alarms, A' is NaN -- should be at chance though, 0.5
-            APrime.E_Room_Invalid = 0.5;
-        elseif Hits.E_Room_Invalid >= FA.E_Room_Invalid
-            APrime.E_Room_Invalid = ((Hits.E_Room_Invalid - FA.E_Room_Invalid) * (1 + Hits.E_Room_Invalid - FA.E_Room_Invalid)) / (4*Hits.E_Room_Invalid*(1-FA.E_Room_Invalid)) + 0.5;
-        elseif Hits.E_Room_Invalid < FA.E_Room_Invalid
-            APrime.E_Room_Invalid = 0.5 - (FA.E_Room_Invalid - Hits.E_Room_Invalid) * (1 + FA.E_Room_Invalid - Hits.E_Room_Invalid) / (4*FA.E_Room_Invalid*(1-Hits.E_Room_Invalid));
-        end
-
-    % create data summary structure
-    DataSummary = struct('Accuracy',Accuracy,'RT',RT, 'Hits',Hits,'FalseAlarms',FA,'InverseEfficiency',InverseEfficiency,'APrime',APrime);
-
-    % save
-    cd(dataPath)
-    save(fileToSave,'DataSummary','rawData', 'columnHeadings');
-
+for s=1:length(subjs)
+    
+    cd(dataPath);
+    
+    % opens data files associated with that subject and names output analysis file accordingly
+    openMatData = ['artmusePatient_' subjs{s} '.mat'];
+    openTxtData = ['artmusePatient_' subjs{s} '.txt'];
+    
+    fileToSave = [subjs{s} '_dataAnalysis.mat'];
+    
+    matData = open(openMatData);
+    txtData = fopen(openTxtData);
+    
+    % prepares .txt file to be open and read
+    columnHeadings = {'trial' 'stimOnset' 'exptCond' 'stimNum' 'cue' 'probe' 'valid' 'resp' 'corResp' 'accuracy' 'RT',...
+        'e_VArtH' 'e_VArtFA' 'e_VRoomH' 'e_VRoomFA' 'e_IVArtH' 'e_IVArtFA' 'e_IVRoomH' 'e_IVRoomFA',...
+        'c_VArtH' 'c_VArtFA' 'c_VRoomH' 'c_VRoomFA' 'c_IVArtH' 'c_IVArtFA' 'c_IVRoomH' 'c_IVRoomFA'};
+    
+    % creates rawTxtData file which imports raw data from the .txt file associated with subject s
+    rawDataCells = textscan(txtData,'%d%.3f%d%d%d%d%d%d%d%d%.3f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f%.2f', ...
+        'HeaderLines', 9,'CommentStyle', {'Block'});
+    
+    for i = 1:size(rawDataCells,2)
+        rawTxtData(:,i) = double(rawDataCells{i});
     end
+    
+    % creates a table of the .txt file from rawTxtData for further use in analysis and to save with data
+    txtTable = array2table(rawTxtData,'VariableNames',columnHeadings);
+    
+    %% calculate hit, false alarm, correct rejection and miss rate from data saved in .mat file
+    
+    Hits.C_Art_Valid = matData.cntrl_valid_ArtProbe_HitRate;
+    Hits.C_Room_Valid = matData.cntrl_valid_RoomProbeHitRate;
+    Hits.C_Art_Invalid = matData.cntrl_invalid_ArtProbeHitRate;
+    Hits.C_Room_Invalid = matData.cntrl_invalid_RoomProbeHitRate;
+    
+    Hits.E_Art_Valid = matData.expt_valid_ArtProbe_HitRate;
+    Hits.E_Room_Valid = matData.expt_valid_RoomProbeHitRate;
+    Hits.E_Art_Invalid = matData.expt_invalid_ArtProbeHitRate;
+    Hits.E_Room_Invalid = matData.expt_invalid_RoomProbeHitRate;
+    
+    FA.C_Art_Valid = matData.cntrl_valid_ArtProbe_FARate;
+    FA.C_Room_Valid = matData.cntrl_valid_RoomProbe_FARate;
+    FA.C_Art_Invalid = matData.cntrl_invalid_ArtProbe_FARate;
+    FA.C_Room_Invalid = matData.cntrl_invalid_RoomProbe_FARate;
+    
+    FA.E_Art_Valid = matData.expt_valid_ArtProbe_FARate;
+    FA.E_Room_Valid = matData.expt_valid_RoomProbe_FARate;
+    FA.E_Art_Invalid = matData.expt_invalid_ArtProbe_FARate;
+    FA.E_Room_Invalid = matData.expt_invalid_RoomProbe_FARate;
+    
+    CR.C_Art_Valid = matData.cntrl_valid_ArtProbe_CRRate;
+    CR.C_Room_Valid = matData.cntrl_valid_RoomProbe_CRRate;
+    CR.C_Art_Invalid = matData.cntrl_invalid_ArtProbe_CRRate;
+    CR.C_Room_Invalid = matData.cntrl_invalid_RoomProbe_CRRate;
+    
+    CR.E_Art_Valid = matData.expt_valid_ArtProbe_CRRate;
+    CR.E_Room_Valid = matData.expt_valid_RoomProbe_CRRate;
+    CR.E_Art_Invalid = matData.expt_invalid_ArtProbe_CRRate;
+    CR.E_Room_Invalid = matData.expt_invalid_RoomProbe_CRRate;
+    
+    Miss.C_Art_Valid = matData.cntrl_valid_ArtProbeMissRate;
+    Miss.C_Room_Valid = matData.cntrl_valid_RoomProbeMissRate;
+    Miss.C_Art_Invalid = matData.cntrl_invalid_ArtProbeMissRate;
+    Miss.C_Room_Invalid = matData.cntrl_invalid_RoomProbeMissRate;
+    
+    Miss.E_Art_Valid = matData.expt_valid_ArtProbeMissRate;
+    Miss.E_Room_Valid = matData.expt_valid_RoomProbeMissRate;
+    Miss.E_Art_Invalid = matData.expt_invalid_ArtProbeMissRate;
+    Miss.E_Room_Invalid = matData.expt_invalid_RoomProbeMissRate;
+    
+    %%  calculate A' for all trial types
+    
+    for c = 1:length(conds)
+        for z = 1:length(states)
+            for v = 1:length(validity)
+                
+                % temporary variable used to correctly label trial type by condition, state and validity
+                tmpLbl = [upper(conds{c}(1)), '_', states{z}, '_', validity{v}];
+                
+                if Hits.(tmpLbl) == FA.(tmpLbl) % if 0 hits and 0 false alarms, A' is NaN -- should be at chance though, 0.5
+                    APrime.(tmpLbl) = 0.5;
+                elseif Hits.(tmpLbl) >= FA.(tmpLbl)
+                    APrime.(tmpLbl) = ((Hits.(tmpLbl) - FA.(tmpLbl)) * (1 + Hits.(tmpLbl) - FA.(tmpLbl))) / (4*Hits.(tmpLbl) * (1 - FA.(tmpLbl))) + 0.5;
+                elseif Hits.(tmpLbl) < FA.(tmpLbl)
+                    APrime.(tmpLbl) = 0.5 - (FA.(tmpLbl) - Hits.(tmpLbl)) * (1 + FA.(tmpLbl) - Hits.(tmpLbl)) / (4*FA.(tmpLbl) * (1 - Hits.(tmpLbl)));
+                end
+                
+            end
+        end
+    end
+    
+    %% calculate hit and false alarm rates and conduct snodgrass correction for dprime 
+    
+    for c = 0:1 % text file utilizes 0 as control trials and 1 as experimental trials
+        for z = 1:length(states)
+            for v = 0:1 % text file utilizes 0 as invalid trials and 1 as valid trials
+                
+                % creates extra variables to ensure the 'tmpLbl' variable calls the correct cells
+                if v == 0
+                    q = 2;
+                elseif v == 1
+                    q = 1;
+                end
+                
+                if c == 0
+                    w = 1;
+                elseif c == 1
+                    w = 2;
+                end
+                
+                % temporary variable used to correctly label trial type by condition, state and validity
+                tmpLbl = [upper(conds{w}(1)), '_', states{z}, '_', validity{q}];
+    
+                Hits_raw.(tmpLbl) = 0; 
+                FA_raw.(tmpLbl) = 0;
+                Miss_raw.(tmpLbl) = 0;
+                CR_raw.(tmpLbl) = 0;
+                present.(tmpLbl) = 0; 
+                absent.(tmpLbl) = 0;
+                
+                for r = 1:size(txtTable.trial,1)
+                    if txtTable.exptCond(r) == c && txtTable.probe(r) == z && txtTable.valid(r) == v
+                        if txtTable.corResp(r) == 1
+                            if txtTable.resp(r) == 1
+                                
+                                present.(tmpLbl) = present.(tmpLbl) + 1;
+                                Hits_raw.(tmpLbl) = Hits_raw.(tmpLbl) + 1;
+                                
+                            elseif txtTable.resp(r) == 0
+                                
+                                present.(tmpLbl) = present.(tmpLbl) + 1;
+                                Miss_raw.(tmpLbl) = Miss_raw.(tmpLbl) + 1;
+                                
+                            end
+                        elseif txtTable.corResp(r) == 0
+                            if txtTable.resp(r) == 1
+                                
+                                absent.(tmpLbl) = absent.(tmpLbl) + 1;
+                                FA_raw.(tmpLbl) = FA_raw.(tmpLbl) + 1;
+                                
+                            elseif txtTable.resp(r) == 0
+                                
+                                absent.(tmpLbl) = absent.(tmpLbl) + 1;
+                                CR_raw.(tmpLbl) = CR_raw.(tmpLbl) + 1;
+                                
+                            end
+                        end
+                    end
+                end
+                
+                Hits_corr.(tmpLbl) = (Hits_raw.(tmpLbl) + 0.5) / (present.(tmpLbl) + 1);
+                FA_corr.(tmpLbl) = (FA_raw.(tmpLbl) + 0.5) / (absent.(tmpLbl) + 1);
+                Miss_corr.(tmpLbl) = Miss_raw.(tmpLbl) / present.(tmpLbl);
+                CR_corr.(tmpLbl) = CR_raw.(tmpLbl) / absent.(tmpLbl);
+                
+            end
+        end
+    end    
+                
+    %% calculate D' for all trial types
+    
+    for c = 1:length(conds)
+        for z = 1:length(states)
+            for v = 1:length(validity)
+                
+                % temporary variable used to correctly label trial type by condition, state and validity
+                tmpLbl = [upper(conds{c}(1)), '_', states{z}, '_', validity{v}];
+                
+                DPrime.(tmpLbl) = norminv(Hits_corr.(tmpLbl)) - norminv(FA_corr.(tmpLbl));
+                
+            end
+        end
+    end
+    
+    %% calculate accuracy for all trial types
+    
+    for c = 0:1 % text file utilizes 0 as control trials and 1 as experimental trials
+        for z = 1:length(states)
+            for v = 0:1 % text file utilizes 0 as invalid trials and 1 as valid trials
+                
+                % creates extra variables to ensure the 'tmpLbl' variable calls the correct cells
+                if v == 0
+                    q = 2;
+                elseif v == 1
+                    q = 1;
+                end
+                
+                if c == 0
+                    w = 1;
+                elseif c == 1
+                    w = 2;
+                end
+                
+                % temporary variable used to correctly label trial type by condition, state and validity
+                tmpLbl = [upper(conds{w}(1)), '_', states{z}, '_', validity{q}];
+                
+                % temporary counter for each trial type
+                tmpCount.(tmpLbl) = 0; tmpAcc.(tmpLbl) = 0;
+                
+                for r = 1:size(txtTable.trial,1)
+                    if txtTable.exptCond(r) == c && txtTable.probe(r) == z && txtTable.valid(r) == v
+                        if txtTable.accuracy(r) == 1
+                            
+                            tmpAcc.(tmpLbl) = tmpAcc.(tmpLbl) + 1;
+                            tmpCount.(tmpLbl) = tmpCount.(tmpLbl) + 1;
+                            
+                        elseif txtTable.accuracy(r) == 0
+                            
+                            tmpCount.(tmpLbl) = tmpCount.(tmpLbl) + 1;
+                            
+                        elseif isnan(txtTable.accuracy(r))
+                            ;
+                        end
+                    end
+                end
+                
+                % final accuracy variable for each trial type
+                Accuracy.(tmpLbl) = tmpAcc.(tmpLbl)/tmpCount.(tmpLbl);
+                
+            end
+        end
+    end
+    
+    %% calculate RTs for all trial types
+    
+    for c = 0:1 % text file utilizes 0 as control trials and 1 as experimental trials
+        for z = 1:length(states)
+            for v = 0:1 % text file utilizes 0 as invalid trials and 1 as valid trials
+                
+                % creates extra variables to ensure the 'tmpLbl' variable calls the correct cells
+                if v == 0
+                    q = 2;
+                elseif v == 1
+                    q = 1;
+                end
+                
+                if c == 0
+                    w = 1;
+                elseif c == 1
+                    w = 2;
+                end
+                
+                % temporary variable used to correctly label trial type by condition, state and validity
+                tmpLbl = [upper(conds{w}(1)), '_', states{z}, '_', validity{q}];
+                
+                % temporary counter for each trial type
+                tmpCount.(tmpLbl) = 0; tmpRT.(tmpLbl) = 0;
+                
+                for r = 1:size(txtTable.trial,1)
+                    if txtTable.exptCond(r) == c && txtTable.probe(r) == z && txtTable.valid(r) == v
+                        if ~isnan(txtTable.RT(r))
+                            
+                            tmpRT.(tmpLbl) = tmpRT.(tmpLbl) + txtTable.RT(r);
+                            tmpCount.(tmpLbl) = tmpCount.(tmpLbl) + 1;
+                            
+                        end
+                    end
+                end
+                
+                % final RT variable for each trial type
+                RT.(tmpLbl) = tmpRT.(tmpLbl)/tmpCount.(tmpLbl);
+                
+            end
+        end
+    end
+    
+    %% calculate log RTs for all trial types
+    
+    for c = 0:1 % text file utilizes 0 as control trials and 1 as experimental trials
+        for z = 1:length(states)
+            for v = 0:1 % text file utilizes 0 as invalid trials and 1 as valid trials
+                
+                % creates extra variables to ensure the 'tmpLbl' variable calls the correct cells
+                if v == 0
+                    q = 2;
+                elseif v == 1
+                    q = 1;
+                end
+                
+                if c == 0
+                    w = 1;
+                elseif c == 1
+                    w = 2;
+                end
+                
+                % temporary variable used to correctly label trial type by condition, state and validity
+                tmpLbl = [upper(conds{w}(1)), '_', states{z}, '_', validity{q}];
+                
+                % temporary counter for each trial type
+                tmpCount.(tmpLbl) = 0; tmpLogRT.(tmpLbl) = 0;
+                
+                for r = 1:size(txtTable.trial,1)
+                    if txtTable.exptCond(r) == c && txtTable.probe(r) == z && txtTable.valid(r) == v
+                        if ~isnan(txtTable.RT(r))
+                            
+                            tmpLRT = log(txtTable.RT(r));
+                            
+                            tmpLogRT.(tmpLbl) = tmpLogRT.(tmpLbl) + tmpLRT;
+                            tmpCount.(tmpLbl) = tmpCount.(tmpLbl) + 1;
+                            LRTcheck.(tmpLbl)(tmpCount.(tmpLbl)) = r;
+                            
+                        end
+                    end
+                end
+                
+                % final RT variable for each trial type
+                logRT.(tmpLbl) = tmpLogRT.(tmpLbl)/tmpCount.(tmpLbl);
+                
+            end
+        end
+    end
+    
+    %% calulate inverse efficiency for all trial types
+    for c = 1:length(conds)
+        for z = 1:length(states)
+            for v = 1:length(validity)
+                
+                % temporary variable used to correctly label trial type by condition, state and validity
+                tmpLbl = [upper(conds{c}(1)), '_', states{z}, '_', validity{v}];
+                
+                InverseEfficiency.(tmpLbl) = RT.(tmpLbl)/Accuracy.(tmpLbl);
+                
+            end
+        end
+    end
+    
+    
+    %% create data summary structure and saves data
+    DataSummary = struct('APrime',APrime,'DPrime',DPrime,'RT',RT,'logRT',logRT,'InverseEfficiency',InverseEfficiency,'Accuracy',Accuracy,'Hits',Hits,'Hits_corr',Hits_corr,'FA',FA,'FA_corr',FA_corr,'CR',CR','Misses',Miss');
+    
+    cd(dataPath);
+    save(fileToSave,'DataSummary','txtTable','matData');
+    
+end

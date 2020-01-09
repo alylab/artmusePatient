@@ -37,7 +37,7 @@ clear all
 
 %% data titles
 
-    measures = {'APrime', 'RT', 'InverseEfficiency'};
+    measures = {'APrime','DPrime','logRT', 'RT', 'InverseEfficiency'};
     conds = {'controlCond', 'exptCond'};
     states = {'Art', 'Room'};
     trialTypes = {'Valid', 'Invalid'};
@@ -58,7 +58,7 @@ for g = 1:length(groups) % for controls and patients
     for s = 1:length(subjs)
 
         % Load subject data
-        fileName = strcat(subjs{s}, '_artmusePatient_dataAnalysis.mat');
+        fileName = strcat(subjs{s}, '_dataAnalysis.mat');
         load(fileName);
 
 

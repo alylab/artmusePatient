@@ -36,14 +36,15 @@ clear all
     
 %% variable names
 
-measures = {'APrime', 'RT', 'InverseEfficiency'};
+measures = {'APrime','logRT'};
 conds = {'controlCond', 'exptCond'};
 states = {'Art', 'Room'};
 trialTypes = {'Valid', 'Invalid'};
 groups = {'controls', 'patients'};
 
-%% data loop
+roomVSart = 1;
 
+%% two by two mixed anova comparing art and room states for control and relational trials separately
 for m = 1:length(measures)
     
     for c = 1:length(conds)
@@ -58,6 +59,7 @@ for m = 1:length(measures)
             elseif g == 2
                 numSub = length(GroupDataSummary.APrime.E_Room_Valid.patients);
             end
+            
             for n = 1:numSub
                 
                 % total subject counter
@@ -67,7 +69,6 @@ for m = 1:length(measures)
                     
                     count=count+1;
                     
-                    % change conds to 1 or 2 to look at control/expt trials
                     tmpLabel = [upper(conds{c}(1)) '_' states{s} '_' trialTypes{1}];
                     
                     if count == 1
@@ -84,7 +85,7 @@ for m = 1:length(measures)
                     mmData.(measures{m}).(conds{c})(count,3) = s; % state (within subs factor)
                     
                     % s or subject
-                    mmData.(measures{m}).(conds{c})(count,4) = tmpN; % subject codes
+                    mmData.(measures{m}).(conds{c})(count,4) = tmpN; % subject codes 
                     
                 end
             end
@@ -101,7 +102,67 @@ disp('Aprime Relational Trials');
 [SSQs, DFs, MSQs, Fs, Ps] = mixed_between_within_anova(mmData.APrime.exptCond)
 
 disp('RT Control Trials');
-[SSQs, DFs, MSQs, Fs, Ps] = mixed_between_within_anova(mmData.RT.controlCond)
+[SSQs, DFs, MSQs, Fs, Ps] = mixed_between_within_anova(mmData.logRT.controlCond)
 
 disp('RT Relational Trials');
-[SSQs, DFs, MSQs, Fs, Ps] = mixed_between_within_anova(mmData.RT.exptCond)
+[SSQs, DFs, MSQs, Fs, Ps] = mixed_between_within_anova(mmData.logRT.exptCond)
+
+
+%% two by two mixed anova comparing control and relational trials for art vs room separately 
+
+if roomVSart == 1
+    for m = 1:length(measures)
+
+        for s = 1:length(states) 
+
+            count=0;
+            tmpN=0;
+
+            for g = 1:2
+
+                if g == 1
+                    numSub = length(GroupDataSummary.APrime.E_Room_Valid.controls);
+                elseif g == 2
+                    numSub = length(GroupDataSummary.APrime.E_Room_Valid.patients);
+                end
+                for n = 1:numSub
+
+                    % total subject counter
+                    tmpN=tmpN+1;
+
+                    for c = 1:length(conds) 
+
+                        count=count+1;
+
+                        tmpLabel = [upper(conds{c}(1)) '_' states{s} '_' trialTypes{1}];
+
+                        if count == 1
+                            mmData.(measures{m}).(conds{c})=zeros(1,4);
+                        end
+
+                        % Y or dependent variable
+                        mmData.(measures{m}).(states{s})(count,1) = GroupDataSummary.(measures{m}).(tmpLabel).(groups{g})(n);
+
+                        % f1
+                        mmData.(measures{m}).(states{s})(count,2) = g; % group (between subs factor)
+
+                        % f2
+                        mmData.(measures{m}).(states{s})(count,3) = c; % condition (within subs factor)
+
+                        % s or subject
+                        mmData.(measures{m}).(states{s})(count,4) = tmpN; % subject codes
+
+                    end
+                end
+            end
+        end
+    end
+
+    %% run ANOVA
+
+    disp('Aprime Art Trials');
+    [SSQs, DFs, MSQs, Fs, Ps] = mixed_between_within_anova(mmData.APrime.Art)
+
+    disp('Aprime Room Trials');
+    [SSQs, DFs, MSQs, Fs, Ps] = mixed_between_within_anova(mmData.APrime.Room)
+end

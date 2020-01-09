@@ -6,7 +6,8 @@
 %
 % second, this code will group the data 
 %
-% third, it will run t-tests. this code can be skipped if desired.
+% third, it will run t-tests. this code can be skipped if desired. this
+% code relies on the 'computeCohen_d.m' script. 
 %
 % fourth, plots will be made for valid control and relational trials
 % (separately) for healthy participants vs patients. the patients will have
@@ -43,7 +44,7 @@ clear all
 
 %% what do you want to do?
 
-    makePlots=1; % 1 for making graphs // 0 for not
+    makePlots=0; % 1 for making graphs // 0 for not
     multiSymbols=1; % 1 for plotting different symbols depending on brain damage // 0 for plotting all the same symbols all patients
     groupData=1; % 1 to group datat // 0 to skip
     runTtests=1; % 1 for running and saving ttests // 0 for skipping that code
@@ -68,7 +69,8 @@ clear all
 
 %% data titles
 
-    measures = {'APrime', 'RT', 'InverseEfficiency'};
+    measures = {'APrime','DPrime','RT','logRT','InverseEfficiency','Accuracy','Hits','FA','Hits_corr','FA_corr','CR','Misses'};
+    
     conds = {'controlCond', 'exptCond'};
     states = {'Art', 'Room'};
     trialTypes = {'Valid', 'Invalid'};
@@ -99,7 +101,7 @@ if groupData == 1
         for s = 1:length(subjs)
             
             % Load subject data
-            fileName = strcat(subjs{s}, '_artmusePatient_dataAnalysis.mat');
+            fileName = strcat(subjs{s}, '_dataAnalysis.mat');
             load(fileName);
             
             
@@ -145,6 +147,7 @@ end
 
 % patients and controls separately
 if runTtests==1
+    
     load(groupFileName);
     for m = 1:length(measures)
         for c = 1:length(conds)
@@ -157,23 +160,47 @@ if runTtests==1
                     tmpLbl = ['Room_vs_Art_' trialTypes{t}];
                     
                     [h, p, ci, stats] = ttest(GroupDataSummary.(measures{m}).(tmpLabelRoom).(groups{g}), GroupDataSummary.(measures{m}).(tmpLabelArt).(groups{g}));
+                    d = computeCohen_d(GroupDataSummary.(measures{m}).(tmpLabelRoom).(groups{g}),GroupDataSummary.(measures{m}).(tmpLabelArt).(groups{g}),'paired');
+                    
                     ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).p = p;
                     ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).ci = ci;
-                    ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).stats = stats;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).tstat = stats.tstat;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).df = stats.df;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).sd = stats.sd;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).cohenD = d;
                     
-                    % if A', compare to chance
+                    % if A', compare to chance and ceiling
                     
-                    for s = 1:length(states)
-                        if strcmp(measures{m}, 'APrime')
+                    if strcmp(measures{m}, 'APrime')
+                        for s = 1:length(states)
                             
                             % art/room valid/invalid vs chance
                             tmpLabel = [upper(conds{c}(1)) '_' states{s} '_' trialTypes{t}];
                             tmpLbl = [states{s} '_' trialTypes{t} '_vs_Chance'];
                             
                             [h, p, ci, stats] = ttest(GroupDataSummary.(measures{m}).(tmpLabel).(groups{g}),0.5);
+                            d = computeCohen_d(GroupDataSummary.(measures{m}).(tmpLabel).(groups{g}),0.5,'independent');
+                            
                             ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).p = p;
                             ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).ci = ci;
-                            ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).stats = stats;
+                            ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).tstat = stats.tstat;
+                            ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).df = stats.df;
+                            ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).sd = stats.sd;
+                            ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).cohenD = d;
+                            
+                            % art/room valid/invalid vs chance
+                            tmpLabel = [upper(conds{c}(1)) '_' states{s} '_' trialTypes{t}];
+                            tmpLbl = [states{s} '_' trialTypes{t} '_vs_Ceiling'];
+                            
+                            [h, p, ci, stats] = ttest(GroupDataSummary.(measures{m}).(tmpLabel).(groups{g}),1);
+                            d = computeCohen_d(GroupDataSummary.(measures{m}).(tmpLabel).(groups{g}),1,'independent');
+                            
+                            ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).p = p;
+                            ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).ci = ci;
+                            ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).tstat = stats.tstat;
+                            ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).df = stats.df;
+                            ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).sd = stats.sd;
+                            ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).cohenD = d;
                             
                         end
                     end
@@ -187,9 +214,14 @@ if runTtests==1
                     tmpLbl = [states{s} '_Valid_vs_Invalid'];
 
                     [h, p, ci, stats] = ttest(GroupDataSummary.(measures{m}).(tmpLabelValid).(groups{g}), GroupDataSummary.(measures{m}).(tmpLabelInvalid).(groups{g}));
+                    d = computeCohen_d(GroupDataSummary.(measures{m}).(tmpLabelValid).(groups{g}), GroupDataSummary.(measures{m}).(tmpLabelInvalid).(groups{g}),'paired');
+                    
                     ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).p = p;
                     ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).ci = ci;
-                    ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).stats = stats;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).tstat = stats.tstat;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).df = stats.df;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).sd = stats.sd;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).(groups{g}).cohenD = d;
 
                 end
             end
@@ -206,9 +238,14 @@ if runTtests==1
                     tmpLbl = [states{s} '_' trialTypes{t} '_patients_vs_controls'];
 
                     [h, p, ci, stats] = ttest2(GroupDataSummary.(measures{m}).(tmpLabel).(groups{2}), GroupDataSummary.(measures{m}).(tmpLabel).(groups{1}));
+                    d = computeCohen_d(GroupDataSummary.(measures{m}).(tmpLabel).(groups{2}), GroupDataSummary.(measures{m}).(tmpLabel).(groups{1}),'independent');
+                    
                     ttests.(conds{c}).(tmpLbl).(measures{m}).p = p;
                     ttests.(conds{c}).(tmpLbl).(measures{m}).ci = ci;
-                    ttests.(conds{c}).(tmpLbl).(measures{m}).stats = stats;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).tstat = stats.tstat;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).df = stats.df;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).sd = stats.sd;
+                    ttests.(conds{c}).(tmpLbl).(measures{m}).cohenD = d;
                 end
             end
         end
@@ -226,9 +263,14 @@ if runTtests==1
                     tmpLbl = [states{s} '_' trialTypes{t} '_control_vs_experimental'];
                     
                     [h, p, ci, stats] = ttest(GroupDataSummary.(measures{m}).(tmpControlLabel).(groups{g}), GroupDataSummary.(measures{m}).(tmpExperimentalLabel).(groups{g}));
+                    d = computeCohen_d(GroupDataSummary.(measures{m}).(tmpControlLabel).(groups{g}), GroupDataSummary.(measures{m}).(tmpExperimentalLabel).(groups{g}),'paired');
+                    
                     ttests.(groups{g}).(tmpLbl).(measures{m}).p = p;
                     ttests.(groups{g}).(tmpLbl).(measures{m}).ci = ci;
-                    ttests.(groups{g}).(tmpLbl).(measures{m}).stats = stats;
+                    ttests.(groups{g}).(tmpLbl).(measures{m}).tstat = stats.tstat;
+                    ttests.(groups{g}).(tmpLbl).(measures{m}).df = stats.df;
+                    ttests.(groups{g}).(tmpLbl).(measures{m}).sd = stats.sd;
+                    ttests.(groups{g}).(tmpLbl).(measures{m}).cohenD = d;
                 end
             end
         end
